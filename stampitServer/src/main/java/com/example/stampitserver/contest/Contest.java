@@ -1,5 +1,6 @@
 package com.example.stampitserver.contest;
 
+import com.example.stampitserver.core.error.exception.OutOfDate;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -65,7 +66,7 @@ public class Contest {
     public Contest(String contestName, Set<Field> fields, String subject, String host, String sponsor,
                    Date receptionStart, Date receptionEnd, Prize prize, String firstPrize, String url, String content){
         if(receptionEnd.toLocalDate().isBefore(LocalDate.now())){
-            // 예외 발생 처리
+            throw new OutOfDate("날짜가 지났습니다.");
         }
         this.contestName = contestName;
         this.fields = fields;
