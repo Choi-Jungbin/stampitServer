@@ -41,9 +41,43 @@ public class Crawler {
         assert doc != null;
         Elements elements = doc.select("div.contest-detail");
 
+        // 공모전 제목
         String title = elements.select("h6.tit").text();
 
         Elements infos = doc.select("ul.cd-info-list li");
 
+        // 데이터를 저장할 맵 초기화
+        Map<String, String> contestData = new HashMap<>();
+
+        for(Element info : infos){
+            String tag = info.select("span.tit").text();
+            String text;
+            if(tag.equals("홈페이지")) text = info.attr("href");
+            else text = info.ownText();
+
+            // 맵에 태그와 내용 저장
+            contestData.put(tag, text);
+        }
+
+        Elements details = elements.select("div.comm-desc div");
+
+        StringBuilder content = new StringBuilder();
+        for(Element detail : details){
+            content.append(detail.text()).append("\n");
+        }
+
+        Contest contest = Contest.builder()
+                .contestName()
+                .fields()
+                .applicant()
+                .host()
+                .sponsor()
+                .receptionStart()
+                .receptionEnd()
+                .prize()
+                .firstPrize()
+                .url()
+                .content()
+                .build();
     }
 }
