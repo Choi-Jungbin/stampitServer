@@ -4,6 +4,7 @@ import com.example.stampitserver.core.error.exception.OutOfDate;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.sql.Date;
@@ -15,6 +16,7 @@ import java.util.Set;
 @Table(name = "contests")
 @Getter
 @ToString
+@NoArgsConstructor
 public class Contest {
 
     @Id
@@ -31,7 +33,7 @@ public class Contest {
     private Set<Field> fields;
 
     @Column
-    private String subject;
+    private String applicant;
 
     @Column
     private String host;
@@ -39,38 +41,40 @@ public class Contest {
     @Column
     private String sponsor;
 
-    @Column(name = "reception_start")
+    @Column(name = "reception_start", nullable = false)
     @Temporal(TemporalType.DATE)
     private Date receptionStart;
 
-    @Column(name = "reception_end")
+    @Column(name = "reception_end", nullable = false)
     @Temporal(TemporalType.DATE)
     private Date receptionEnd;
 
-    @Column
+    @Column(nullable = false)
     private int remainDays;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private Prize prize;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private String firstPrize;
 
-    @Column(length = 1024)
+    @Column(length = 1024, nullable = false)
     private String url;
 
     @Column(columnDefinition = "TEXT")
     private String content;
 
     @Builder
-    public Contest(String contestName, Set<Field> fields, String subject, String host, String sponsor,
+    public Contest(String contestName, Set<Field> fields, String applicant, String host, String sponsor,
                    Date receptionStart, Date receptionEnd, Prize prize, String firstPrize, String url, String content){
         if(receptionEnd.toLocalDate().isBefore(LocalDate.now())){
             throw new OutOfDate("날짜가 지났습니다.");
         }
         this.contestName = contestName;
         this.fields = fields;
-        this.subject = subject;
+        this.applicant = applicant;
         this.host = host;
         this.sponsor = sponsor;
         this.receptionStart = receptionStart;
