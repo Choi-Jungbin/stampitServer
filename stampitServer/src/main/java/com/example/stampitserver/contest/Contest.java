@@ -33,7 +33,10 @@ public class Contest {
     private Set<Field> fields;
 
     @Column
-    private String applicant;
+    @ElementCollection(targetClass = Applicant.class)
+    @CollectionTable(name = "contest_applicants", joinColumns = @JoinColumn(name = "contest_id"))
+    @Enumerated(EnumType.STRING)
+    private Set<Applicant> applicant;
 
     @Column
     private String host;
@@ -57,7 +60,6 @@ public class Contest {
     private Prize prize;
 
     @Column
-    @Enumerated(EnumType.STRING)
     private String firstPrize;
 
     @Column(length = 1024, nullable = false)
@@ -67,7 +69,7 @@ public class Contest {
     private String content;
 
     @Builder
-    public Contest(String contestName, Set<Field> fields, String applicant, String host, String sponsor,
+    public Contest(String contestName, Set<Field> fields, Set<Applicant> applicant, String host, String sponsor,
                    Date receptionStart, Date receptionEnd, Prize prize, String firstPrize, String url, String content){
         if(receptionEnd.toLocalDate().isBefore(LocalDate.now())){
             throw new OutOfDate("날짜가 지났습니다.");

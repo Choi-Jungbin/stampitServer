@@ -12,7 +12,7 @@ public enum Applicant {
     ETC("기타");
 
     private final String applicant;
-    
+
     Applicant(String s){
         this.applicant = s;
     }
