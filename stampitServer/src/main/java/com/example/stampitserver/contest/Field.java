@@ -27,4 +27,14 @@ public enum Field {
     Field(String s) {
         this.field = s;
     }
+
+    // 한글 문자열을 Field enum으로 변환하는 메서드
+    public static Field fromString(String field) {
+        for (Field f : Field.values()) {
+            if (f.getField().equals(field)) {
+                return f;
+            }
+        }
+        throw new IllegalArgumentException("해당 enum 내용은 field에 없습니다: " + field);
+    }
 }

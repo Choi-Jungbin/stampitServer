@@ -16,4 +16,14 @@ public enum Applicant {
     Applicant(String s){
         this.applicant = s;
     }
+
+    // 한글 문자열을 Applicant enum으로 변환하는 메서드
+    public static Applicant fromString(String applicant) {
+        for (Applicant a : Applicant.values()) {
+            if (a.getApplicant().equals(applicant)) {
+                return a;
+            }
+        }
+        throw new IllegalArgumentException("해당 enum 내용은 applicant에 없습니다: " + applicant);
+    }
 }

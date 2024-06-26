@@ -19,4 +19,14 @@ public enum Prize {
     Prize(String s){
         this.prize = s;
     }
+
+    // 한글 문자열을 Prize enum으로 변환하는 메서드
+    public static Prize fromString(String prize) {
+        for (Prize p : Prize.values()) {
+            if (p.getPrize().equals(prize)) {
+                return p;
+            }
+        }
+        throw new IllegalArgumentException("해당 enum 내용은 prize에 없습니다: " + prize);
+    }
 }
