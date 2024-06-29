@@ -14,7 +14,8 @@ import java.sql.Date;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Crawler {
+
+public class CrawlingService {
     public void crawling(String url){
         Document doc = null;
 
