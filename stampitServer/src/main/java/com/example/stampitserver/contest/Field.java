@@ -1,5 +1,6 @@
 package com.example.stampitserver.contest;
 
+import com.example.stampitserver.core.error.exception.NotFondEnumException;
 import lombok.Getter;
 
 @Getter
@@ -35,6 +36,6 @@ public enum Field {
                 return f;
             }
         }
-        throw new IllegalArgumentException("해당 enum 내용은 field에 없습니다: " + field);
+        throw new NotFondEnumException("해당 enum 내용은 field에 없습니다: " + field);
     }
 }
