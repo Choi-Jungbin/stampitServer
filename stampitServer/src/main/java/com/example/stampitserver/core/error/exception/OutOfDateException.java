@@ -5,9 +5,9 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public class OutOfDate extends RuntimeException{
+public class OutOfDateException extends RuntimeException{
 
-    public OutOfDate(String message){
+    public OutOfDateException(String message){
         super(message);
     }
 
