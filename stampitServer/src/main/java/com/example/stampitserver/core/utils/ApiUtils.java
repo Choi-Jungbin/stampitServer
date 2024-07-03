@@ -1,17 +1,24 @@
 package com.example.stampitserver.core.utils;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
 public class ApiUtils {
 
-    @AllArgsConstructor
+    @Getter
+    @Setter
+    @RequiredArgsConstructor
     public static class ApiError{
         private final String message;
         private final int status;
     }
 
-    @AllArgsConstructor
+    @Getter
+    @Setter
+    @RequiredArgsConstructor
     public static class ApiResult<T>{
         private final boolean success;
         private final T response;
