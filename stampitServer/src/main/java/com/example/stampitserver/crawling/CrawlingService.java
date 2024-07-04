@@ -3,6 +3,7 @@ package com.example.stampitserver.crawling;
 import com.example.stampitserver.contest.*;
 import com.example.stampitserver.core.error.exception.NotFondEnumException;
 import com.example.stampitserver.core.error.exception.OutOfDateException;
+import com.example.stampitserver.contest.ContestJPARepository;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -61,7 +62,7 @@ public class CrawlingService {
         for(Element info : infos){
             String tag = info.select("span.tit").text();
             String text;
-            if(tag.equals("홈페이지")) text = info.attr("href");
+            if(tag.equals("홈페이지")) text = info.select("a").attr("href");
             else text = info.ownText();
 
             // 맵에 태그와 내용 저장
@@ -92,9 +93,11 @@ public class CrawlingService {
                     .url(contestData.get("홈페이지"))
                     .content(content.toString())
                     .build();
-        } catch (OutOfDateException | NotFondEnumException e) {
+        } catch (NotFondEnumException e) {
             System.out.println(e.getMessage());
             System.out.println(title + ", " + contestData.get("홈페이지"));
+            return;
+        } catch (OutOfDateException e){
             return;
         }
         contestJPARepository.save(contest);
