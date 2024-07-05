@@ -12,7 +12,7 @@ public class OutOfDateException extends RuntimeException{
     }
 
     public ApiUtils.ApiResult<?> body(){
-        return ApiUtils.error(getMessage(), HttpStatus.BAD_REQUEST);
+        return ApiUtils.error("Out of Date", getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     public HttpStatus status(){

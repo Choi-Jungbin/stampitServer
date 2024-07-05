@@ -15,6 +15,6 @@ public class CrawlingController {
     @PostMapping("/crawling")
     public ResponseEntity<ApiUtils.ApiResult> crawler(String url){
         crawlingService.crawling(url);
-        return ResponseEntity.ok(ApiUtils.success(null));
+        return ResponseEntity.ok(ApiUtils.success("success", null));
     }
 }

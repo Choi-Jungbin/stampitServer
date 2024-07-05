@@ -9,7 +9,7 @@ public class NotFondEnumException extends RuntimeException{
 
     public NotFondEnumException(String message){ super(message);}
 
-    public ApiUtils.ApiResult<?> body(){return ApiUtils.error(getMessage(), HttpStatus.BAD_REQUEST);}
+    public ApiUtils.ApiResult<?> body(){return ApiUtils.error("Not Found Enum", getMessage(), HttpStatus.BAD_REQUEST);}
 
     public HttpStatus status(){return HttpStatus.BAD_REQUEST;}
 }
