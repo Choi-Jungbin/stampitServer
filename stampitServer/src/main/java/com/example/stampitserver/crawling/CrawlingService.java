@@ -9,6 +9,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -126,5 +128,11 @@ public class CrawlingService {
             return null;
         }
         return Date.valueOf(date);
+    }
+
+    public ContestFindAllResponseDTO findAllContest(Pageable pageable){
+        Page<Contest> contests = contestJPARepository.findAll(pageable);
+
+        return new ContestFindAllResponseDTO(contests);
     }
 }
