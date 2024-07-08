@@ -2,6 +2,7 @@ package com.example.stampitserver.crawling;
 
 import com.example.stampitserver.contest.*;
 import com.example.stampitserver.core.error.exception.NotFondEnumException;
+import com.example.stampitserver.core.error.exception.NotFoundException;
 import com.example.stampitserver.core.error.exception.OutOfDateException;
 import com.example.stampitserver.contest.ContestJPARepository;
 import lombok.RequiredArgsConstructor;
@@ -134,5 +135,10 @@ public class CrawlingService {
         Page<Contest> contests = contestJPARepository.findAll(pageable);
 
         return new ContestFindAllResponseDTO(contests);
+    }
+
+    public Contest findContest(Long id){
+        return contestJPARepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("해당 id를 가진 공모전이 없습니다"));
     }
 }
