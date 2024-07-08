@@ -1,5 +1,6 @@
 package com.example.stampitserver.contest;
 
+import com.example.stampitserver.core.error.exception.NotFondEnumException;
 import lombok.Getter;
 
 @Getter
@@ -12,7 +13,7 @@ public enum Prize {
     ADD_POINT("입사시가산점"),
     INTERN("인턴채용"),
     EMPLOYEE("정직원채용"),
-    ETC("기타");
+    ETC("다양한 혜택");
 
     private final String prize;
 
@@ -27,6 +28,6 @@ public enum Prize {
                 return p;
             }
         }
-        throw new IllegalArgumentException("해당 enum 내용은 prize에 없습니다: " + prize);
+        throw new NotFondEnumException("해당 enum 내용은 prize에 없습니다: " + prize);
     }
 }
