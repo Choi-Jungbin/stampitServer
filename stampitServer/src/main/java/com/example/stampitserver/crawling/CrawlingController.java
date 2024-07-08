@@ -1,5 +1,6 @@
 package com.example.stampitserver.crawling;
 
+import com.example.stampitserver.contest.Contest;
 import com.example.stampitserver.contest.ContestFindAllResponseDTO;
 import com.example.stampitserver.core.utils.ApiUtils;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +27,12 @@ public class CrawlingController {
         ContestFindAllResponseDTO contestFindAllResponseDTO = crawlingService.findAllContest(pageable);
 
         return ResponseEntity.ok(ApiUtils.success(contestFindAllResponseDTO, "success"));
+    }
+
+    @GetMapping("/contest_detail")
+    public ResponseEntity<ApiUtils.ApiResult> findContest(Long id){
+        Contest contest = crawlingService.findContest(id);
+
+        return ResponseEntity.ok(ApiUtils.success(contest, "success"));
     }
 }
