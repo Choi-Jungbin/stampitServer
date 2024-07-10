@@ -19,7 +19,7 @@ jobs:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
     - name: Copy files to phone
-      run: scp -P 8080 -r . jb@stampit.ddns.net:/path/to/deploy/directory
+      run: scp -P 8080 -r . jb@stampit.ddns.net:~/stampit
 
     - name: Execute deployment script
-      run: ssh -p 8080 jb@stampit.ddns.net "cd /path/to/deploy/directory && ./deploy.sh"
+      run: ssh -p 8080 jb@stampit.ddns.net "cd ~/stampit && ./deploy.sh"
