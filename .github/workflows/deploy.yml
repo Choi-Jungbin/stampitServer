@@ -18,6 +18,9 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+    - name: Add known hosts
+      run: echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+
     - name: Copy files to phone
       run: scp -P 8080 -r . jb@stampit.ddns.net:~/stampit
 
