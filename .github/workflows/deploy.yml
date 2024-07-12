@@ -27,8 +27,8 @@ jobs:
       uses: appleboy/scp-action@v0.1.7
       with:
         host: stampit.ddns.net
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
+        username: jb
+        password: jb
         port: 8080
         source: "./stampitServer/*"
         target: "~/stampit"
