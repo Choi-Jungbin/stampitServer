@@ -28,7 +28,7 @@ jobs:
       with:
         host: stampit.ddns.net
         username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        password: ${{ secrets.KEY }}
         port: 8080
         source: "./stampitServer/*"
         target: "~/stampit"
