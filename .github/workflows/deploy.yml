@@ -18,13 +18,15 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    # - name: Add known hosts
-    #   run: echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+    - run: pwd
 
     - name: Add known hosts
-      run: mkdir -p ~/.ssh
-        ssh-keyscan -p 8080 stampit.ddns.net >> ~/.ssh/known_hosts
-        cat ~/.ssh/known_hosts
+      run: echo "${{ secrets.SSH_KNOWN_HOSTS }}" >> ~/.ssh/known_hosts
+
+    # - name: Add known hosts
+    #   run: mkdir -p ~/.ssh
+    #     ssh-keyscan -p 8080 stampit.ddns.net >> ~/.ssh/known_hosts
+    #     cat ~/.ssh/known_hosts
 
     - name: Copy files to phone
       run: scp -P 8080 -r . jb@stampit.ddns.net:~/stampit
