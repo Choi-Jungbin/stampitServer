@@ -31,11 +31,11 @@ jobs:
     - name: copy file via ssh password
       uses: appleboy/scp-action@v0.1.7
       with:
-        host: ${{ secrets.HOST }}
+        host: stampit.ddns.net
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: ${{ secrets.PORT }}
+        port: 8080
         source: "./stampitServer"
         target: "~/stampit"
     
