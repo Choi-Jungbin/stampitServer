@@ -28,8 +28,18 @@ jobs:
     #     ssh-keyscan -p 8080 stampit.ddns.net >> ~/.ssh/known_hosts
     #     cat ~/.ssh/known_hosts
 
-    - name: Copy files to phone
-      run: scp -P 8080 -r . jb@stampit.ddns.net:~/stampit
+    - name: copy file via ssh password
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        source: "./stampitServer"
+        target: "jb@stampit.ddns.net:~/stampit"
+    
+    # - name: Copy files to phone
+    #   run: scp -P 8080 -r . jb@stampit.ddns.net:~/stampit
 
     - name: Execute deployment script
       run: ssh -p 8080 jb@stampit.ddns.net "cd ~/stampit && ./deploy.sh"
