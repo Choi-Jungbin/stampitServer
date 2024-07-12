@@ -37,7 +37,7 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.PORT }}
         source: "./stampitServer"
-        target: "jb@stampit.ddns.net:~/stampit"
+        target: "~/stampit"
     
     # - name: Copy files to phone
     #   run: scp -P 8080 -r . jb@stampit.ddns.net:~/stampit
