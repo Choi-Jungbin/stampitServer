@@ -3,6 +3,9 @@ package com.example.stampitserver.contest;
 import com.example.stampitserver.core.error.exception.NotFondEnumException;
 import lombok.Getter;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @Getter
 public enum Prize {
     ABOVE_5("5천만원이상"),
@@ -28,6 +31,46 @@ public enum Prize {
                 return p;
             }
         }
-        throw new NotFondEnumException("해당 enum 내용은 prize에 없습니다: " + prize);
+        return parsePrize(prize);
+    }
+
+    private static Prize parsePrize(String p){
+        if(p == null || p.isEmpty()){
+            return Prize.ETC;
+        }
+        Prize prize = Prize.fromString(p);
+        if(prize != null){
+            return prize;
+        }
+        if(p.contains("혜택")){
+            return Prize.ETC;
+        }
+
+        if(p.contains("만원")){
+            if(p.contains("억")){
+                return Prize.ABOVE_5;
+            }
+            Pattern thousand = Pattern.compile("\\b\\d{4,}|천");
+            Matcher thousandMatcher = thousand.matcher(p);
+            if(thousandMatcher.find()){
+                int start = thousandMatcher.start();
+                int length = thousandMatcher.end() - start;
+                return switch (length) {
+                    case 1 -> switch (p.substring(start, start + 1)) {
+                        case "일", "이" -> Prize.BTW_3_TO_1;
+                        case "삼", "사" -> Prize.BTW_5_TO_3;
+                        default -> Prize.ABOVE_5;
+                    };
+                    case 4 -> switch (p.substring(start, start + 1)) {
+                        case "1", "2" -> Prize.BTW_3_TO_1;
+                        case "3", "4" -> Prize.BTW_5_TO_3;
+                        default -> Prize.ABOVE_5;
+                    };
+                    default -> Prize.ABOVE_5;
+                };
+            }
+            return Prize.UNDER_1;
+        }
+        return Prize.ETC;
     }
 }
