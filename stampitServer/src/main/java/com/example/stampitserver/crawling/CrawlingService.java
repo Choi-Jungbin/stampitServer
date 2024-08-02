@@ -14,16 +14,26 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
 import java.sql.Date;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.lang.System.getenv;
 
 @RequiredArgsConstructor
 @Service
 public class CrawlingService {
 
+    Map<String, String> env = getenv();
+
     private final ContestJPARepository contestJPARepository;
+    private String homepage = "https://www.wevity.com/";
+    private String imgPath = env.get("IMG_PATH");
 
     public void crawling(String url){
         Document doc = null;
@@ -38,7 +48,7 @@ public class CrawlingService {
         Elements links = doc.select("div.tit > a");
 
         for(Element link : links){
-            contestCrawling("https://www.wevity.com/" + link.attr("href"));
+            contestCrawling(homepage + link.attr("href"));
         }
     }
 
@@ -72,7 +82,7 @@ public class CrawlingService {
             contestData.put(tag, text);
         }
 
-        Elements details = elements.select("div.comm-desc div");
+        Elements details = elements.select("div.comm-desc");
 
         StringBuilder content = new StringBuilder();
         for(Element detail : details){
@@ -103,6 +113,38 @@ public class CrawlingService {
         } catch (OutOfDateException e){
             return;
         }
+        contestJPARepository.save(contest);
+
+        // 이미지 저장
+        String previewImg;
+        try{
+            String previewImgSrc = elements.select("div.thumb img").attr("src");
+            if (previewImgSrc == null || previewImgSrc.isEmpty()) {
+                previewImg = null; // 이미지가 없을 경우 null 설정
+            } else {
+                InputStream previewIn = new URL(homepage + previewImgSrc).openStream();
+                previewImg = imgPath + contest.getId() + "_preview.jpg";
+                Files.copy(previewIn, new File(previewImg).toPath());
+                previewIn.close(); // InputStream 닫기
+            }
+        } catch (IOException e){
+            previewImg = null;
+        }
+        String img;
+        try{
+            String imgSrc = details.select("img").attr("src");
+            if (imgSrc == null || imgSrc.isEmpty()) {
+                img = null; // 이미지가 없을 경우 null 설정
+            } else {
+                InputStream in = new URL(homepage + imgSrc).openStream();
+                img = imgPath + contest.getId() + ".jpg";
+                Files.copy(in, new File(img).toPath());
+                in.close(); // InputStream 닫기
+            }
+        } catch (IOException e){
+            img = null;
+        }
+        contest.setImg(previewImg, img);
         contestJPARepository.save(contest);
     }
 

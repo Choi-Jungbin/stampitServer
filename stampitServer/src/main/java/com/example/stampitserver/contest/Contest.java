@@ -68,6 +68,12 @@ public class Contest {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Column
+    private String previewImg;
+
+    @Column
+    private String img;
+
     @Builder
     public Contest(String contestName, Set<Field> fields, Set<Applicant> applicant, String host, String sponsor,
                    Date receptionStart, Date receptionEnd, Prize prize, String firstPrize, String url, String content){
@@ -86,6 +92,11 @@ public class Contest {
         this.firstPrize = firstPrize;
         this.url = url;
         this.content = content;
+    }
+
+    public void setImg(String previewImg, String img){
+        this.previewImg = previewImg;
+        this.img = img;
     }
 
     private int calcRemainDays(Date receptionEnd){
