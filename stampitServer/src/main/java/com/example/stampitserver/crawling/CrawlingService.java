@@ -10,6 +10,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,17 +24,15 @@ import java.sql.Date;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.lang.System.getenv;
-
 @RequiredArgsConstructor
 @Service
 public class CrawlingService {
 
-    Map<String, String> env = getenv();
-
     private final ContestJPARepository contestJPARepository;
     private String homepage = "https://www.wevity.com/";
-    private String imgPath = env.get("IMG_PATH");
+
+    @Value("${img.contest}")
+    private String imgPath;
 
     public void crawling(String url){
         Document doc = null;
@@ -123,8 +122,8 @@ public class CrawlingService {
                 previewImg = null; // 이미지가 없을 경우 null 설정
             } else {
                 InputStream previewIn = new URL(homepage + previewImgSrc).openStream();
-                previewImg = imgPath + contest.getId() + "_preview.jpg";
-                Files.copy(previewIn, new File(previewImg).toPath());
+                previewImg = contest.getId() + "_preview.jpg";
+                Files.copy(previewIn, new File(imgPath + previewImg).toPath());
                 previewIn.close(); // InputStream 닫기
             }
         } catch (IOException e){
@@ -137,8 +136,8 @@ public class CrawlingService {
                 img = null; // 이미지가 없을 경우 null 설정
             } else {
                 InputStream in = new URL(homepage + imgSrc).openStream();
-                img = imgPath + contest.getId() + ".jpg";
-                Files.copy(in, new File(img).toPath());
+                img = contest.getId() + ".jpg";
+                Files.copy(in, new File(imgPath + img).toPath());
                 in.close(); // InputStream 닫기
             }
         } catch (IOException e){

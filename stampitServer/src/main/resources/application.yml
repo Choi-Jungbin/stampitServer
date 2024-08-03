@@ -17,3 +17,6 @@ spring:
       ddl-auto: update
 server:
   port: 8080
+
+img:
+  contest: ${CONTEST_IMG_PATH}
