@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Date;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -57,7 +59,8 @@ public class CrawlingService {
 
     // 마감 날짜가 지난 공모전 삭제
     @Scheduled(cron = "0 0 0 * * ?")
-    private void dailyUpdateContest(){
+    @Transactional
+    public void dailyUpdateContest(){
         List<Contest> contests = contestJPARepository.findAll();
 
         for (Contest contest : contests){
@@ -67,7 +70,31 @@ public class CrawlingService {
 
         contests.stream()
                 .filter(contest -> contest.getRemainDays() < 0)
-                .forEach(contestJPARepository::delete);
+                .forEach(this::deleteContest);
+    }
+
+    private void deleteContest(Contest contest){
+        String previewImg = imgPath + contest.getPreviewImg();
+        if (!previewImg.isEmpty()) {
+            try {
+                Path path = Paths.get(previewImg);
+                Files.deleteIfExists(path); // 이미지 파일 삭제
+            } catch (IOException e) {
+                System.err.println("Failed to delete image: " + e.getMessage());
+            }
+        }
+
+        String img = imgPath + contest.getImg();
+        if (!previewImg.isEmpty()) {
+            try {
+                Path path = Paths.get(img);
+                Files.deleteIfExists(path); // 이미지 파일 삭제
+            } catch (IOException e) {
+                System.err.println("Failed to delete image: " + e.getMessage());
+            }
+        }
+
+        contestJPARepository.delete(contest);
     }
 
     @Transactional
