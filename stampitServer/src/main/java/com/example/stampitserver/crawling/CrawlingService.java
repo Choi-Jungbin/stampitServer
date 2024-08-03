@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -37,6 +38,7 @@ public class CrawlingService {
     @Value("${img.contest}")
     private String imgPath;
 
+    @Transactional
     public void crawling(String url){
         Document doc = null;
 
@@ -175,17 +177,20 @@ public class CrawlingService {
         return Date.valueOf(date);
     }
 
+    @Transactional
     public ContestFindAllResponseDTO findAllContest(Pageable pageable){
         Page<Contest> contests = contestJPARepository.findAll(pageable);
 
         return new ContestFindAllResponseDTO(contests);
     }
 
+    @Transactional
     public Contest findContest(Long id){
         return contestJPARepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("해당 id를 가진 공모전이 없습니다"));
     }
 
+    @Transactional
     public void registerContest(ContestRegisterRequestDTO contestDTO, MultipartFile previewImg, MultipartFile img){
         Contest contest;
         try {
