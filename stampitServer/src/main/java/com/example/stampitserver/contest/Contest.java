@@ -99,6 +99,10 @@ public class Contest {
         this.img = img;
     }
 
+    public void decrementDays(){
+        this.remainDays--;
+    }
+
     private int calcRemainDays(Date receptionEnd){
         LocalDate endDate = receptionEnd.toLocalDate();
         LocalDate today = LocalDate.now();

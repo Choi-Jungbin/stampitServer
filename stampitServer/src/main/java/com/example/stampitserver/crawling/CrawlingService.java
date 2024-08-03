@@ -55,6 +55,21 @@ public class CrawlingService {
         crawlingPage(3);
     }
 
+    // 마감 날짜가 지난 공모전 삭제
+    @Scheduled(cron = "0 0 0 * * ?")
+    private void dailyUpdateContest(){
+        List<Contest> contests = contestJPARepository.findAll();
+
+        for (Contest contest : contests){
+            contest.decrementDays();
+            contestJPARepository.save(contest);
+        }
+
+        contests.stream()
+                .filter(contest -> contest.getRemainDays() < 0)
+                .forEach(contestJPARepository::delete);
+    }
+
     @Transactional
     public void crawlingPage(int count){
         for(int i = 0; i < count; i++) {
