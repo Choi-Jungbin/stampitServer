@@ -5,6 +5,7 @@ import com.example.stampitserver.core.error.exception.NotFondEnumException;
 import com.example.stampitserver.core.error.exception.NotFoundException;
 import com.example.stampitserver.core.error.exception.OutOfDateException;
 import com.example.stampitserver.contest.ContestJPARepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -13,6 +14,7 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,21 +40,38 @@ public class CrawlingService {
     @Value("${img.contest}")
     private String imgPath;
 
-    @Transactional
-    public void crawling(String url){
-        Document doc = null;
-
-        try {
-            doc = Jsoup.connect(url).get();
-        }catch (IOException e) {
-            e.printStackTrace();
+    @PostConstruct
+    private void crawling(){
+        // DB에 레코드가 있는지 확인
+        if(contestJPARepository.count() != 0){
+            return;
         }
+        crawlingPage(50);
+    }
 
-        assert doc != null;
-        Elements links = doc.select("div.tit > a");
+    // 매일 자정에 크롤링 업데이트
+    @Scheduled(cron = "0 0 0 * * ?")
+    private void dailyCrawling(){
+        crawlingPage(3);
+    }
 
-        for(Element link : links){
-            contestCrawling(homepage + link.attr("href"));
+    @Transactional
+    public void crawlingPage(int count){
+        for(int i = 0; i < count; i++) {
+            Document doc = null;
+
+            try {
+                doc = Jsoup.connect(homepage + "?c=find&s=1&gub=1&gp=" + i).get();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            assert doc != null;
+            Elements links = doc.select("div.tit > a");
+
+            for (Element link : links) {
+                contestCrawling(homepage + link.attr("href"));
+            }
         }
     }
 
@@ -79,7 +98,14 @@ public class CrawlingService {
         for(Element info : infos){
             String tag = info.select("span.tit").text();
             String text;
-            if(tag.equals("홈페이지")) text = info.select("a").attr("href");
+            if(tag.equals("홈페이지")){
+                text = info.select("a").attr("href");
+                // 이미 저장되어 있으면 종료
+                Contest contest = contestJPARepository.findByUrl(text);
+                if(contest != null){
+                    return;
+                }
+            }
             else text = info.ownText();
 
             // 맵에 태그와 내용 저장

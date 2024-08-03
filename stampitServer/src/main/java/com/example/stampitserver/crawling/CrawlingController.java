@@ -16,12 +16,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class CrawlingController {
     private final CrawlingService crawlingService;
 
-    @PostMapping("/crawling")
-    public ResponseEntity<ApiUtils.ApiResult> crawler(String url){
-        crawlingService.crawling(url);
-        return ResponseEntity.ok(ApiUtils.success("success", null));
-    }
-
     @GetMapping("/contests")
     public ResponseEntity<ApiUtils.ApiResult> findAllContest(@PageableDefault(size = 20) Pageable pageable){
         ContestFindAllResponseDTO contestFindAllResponseDTO = crawlingService.findAllContest(pageable);
