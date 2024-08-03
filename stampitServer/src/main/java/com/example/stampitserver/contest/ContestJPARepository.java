@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ContestJPARepository extends JpaRepository<Contest, Long> {
     Page<Contest> findAll(Pageable pageable);
+
+    Contest findByUrl(String url);
 }

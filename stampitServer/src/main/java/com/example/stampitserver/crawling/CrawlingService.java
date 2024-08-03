@@ -192,7 +192,10 @@ public class CrawlingService {
 
     @Transactional
     public void registerContest(ContestRegisterRequestDTO contestDTO, MultipartFile previewImg, MultipartFile img){
-        Contest contest;
+        Contest contest = contestJPARepository.findByUrl(contestDTO.getUrl());
+        if(contest != null){
+            return;
+        }
         try {
             contest = Contest.builder()
                     .contestName(contestDTO.getContestName())
