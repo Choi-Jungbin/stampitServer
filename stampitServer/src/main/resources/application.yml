@@ -20,3 +20,6 @@ server:
 
 img:
   contest: ${CONTEST_IMG_PATH}
+
+contest:
+  url: ${CONTEST_URL}

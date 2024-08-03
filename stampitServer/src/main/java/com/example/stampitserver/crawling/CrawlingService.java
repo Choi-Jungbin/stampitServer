@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +30,9 @@ import java.util.stream.Collectors;
 public class CrawlingService {
 
     private final ContestJPARepository contestJPARepository;
-    private String homepage = "https://www.wevity.com/";
+
+    @Value("${contest.url}")
+    private String homepage;
 
     @Value("${img.contest}")
     private String imgPath;
@@ -181,5 +184,54 @@ public class CrawlingService {
     public Contest findContest(Long id){
         return contestJPARepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("해당 id를 가진 공모전이 없습니다"));
+    }
+
+    public void registerContest(ContestRegisterRequestDTO contestDTO, MultipartFile previewImg, MultipartFile img){
+        Contest contest;
+        try {
+            contest = Contest.builder()
+                    .contestName(contestDTO.getContestName())
+                    .fields(contestDTO.getFields())
+                    .applicant(contestDTO.getApplicant())
+                    .host(contestDTO.getHost())
+                    .sponsor(contestDTO.getSponsor())
+                    .receptionStart(contestDTO.getReceptionStart())
+                    .receptionEnd(contestDTO.getReceptionEnd())
+                    .prize(contestDTO.getPrize())
+                    .firstPrize(contestDTO.getFirstPrize())
+                    .url(contestDTO.getUrl())
+                    .content(contestDTO.getContent())
+                    .build();
+        } catch (OutOfDateException e){
+            return;
+        }
+        contestJPARepository.save(contest);
+
+        // 이미지 저장
+        String previewImgName = null;
+        if(!previewImg.isEmpty()){
+            try {
+                previewImgName = contest.getId() + "_preview.jpg";
+                File previewImgFile = new File(imgPath, previewImgName);
+
+                previewImg.transferTo(previewImgFile);
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+
+        String imgName = null;
+        if(!img.isEmpty()){
+            try {
+                imgName = contest.getId() + ".jpg";
+                File imgFile = new File(imgPath, imgName);
+
+                previewImg.transferTo(imgFile);
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+        contest.setImg(previewImgName, imgName);
+        contestJPARepository.save(contest);
     }
 }
