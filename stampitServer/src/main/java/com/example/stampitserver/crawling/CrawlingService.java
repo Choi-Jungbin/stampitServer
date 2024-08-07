@@ -5,16 +5,27 @@ import com.example.stampitserver.core.error.exception.NotFondEnumException;
 import com.example.stampitserver.core.error.exception.NotFoundException;
 import com.example.stampitserver.core.error.exception.OutOfDateException;
 import com.example.stampitserver.contest.ContestJPARepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Date;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,20 +36,84 @@ public class CrawlingService {
 
     private final ContestJPARepository contestJPARepository;
 
-    public void crawling(String url){
-        Document doc = null;
+    @Value("${contest.url}")
+    private String homepage;
 
-        try {
-            doc = Jsoup.connect(url).get();
-        }catch (IOException e) {
-            e.printStackTrace();
+    @Value("${img.contest}")
+    private String imgPath;
+
+    @PostConstruct
+    private void crawling(){
+        // DB에 레코드가 있는지 확인
+        if(contestJPARepository.count() != 0){
+            return;
+        }
+        crawlingPage(50);
+    }
+
+    // 매일 자정에 크롤링 업데이트
+    @Scheduled(cron = "0 0 0 * * ?")
+    private void dailyCrawling(){
+        crawlingPage(3);
+    }
+
+    // 마감 날짜가 지난 공모전 삭제
+    @Scheduled(cron = "0 0 0 * * ?")
+    @Transactional
+    public void dailyUpdateContest(){
+        List<Contest> contests = contestJPARepository.findAll();
+
+        for (Contest contest : contests){
+            contest.decrementDays();
+            contestJPARepository.save(contest);
         }
 
-        assert doc != null;
-        Elements links = doc.select("div.tit > a");
+        contests.stream()
+                .filter(contest -> contest.getRemainDays() < 0)
+                .forEach(this::deleteContest);
+    }
 
-        for(Element link : links){
-            contestCrawling("https://www.wevity.com/" + link.attr("href"));
+    private void deleteContest(Contest contest){
+        String previewImg = imgPath + contest.getPreviewImg();
+        if (!previewImg.isEmpty()) {
+            try {
+                Path path = Paths.get(previewImg);
+                Files.deleteIfExists(path); // 이미지 파일 삭제
+            } catch (IOException e) {
+                System.err.println("Failed to delete image: " + e.getMessage());
+            }
+        }
+
+        String img = imgPath + contest.getImg();
+        if (!previewImg.isEmpty()) {
+            try {
+                Path path = Paths.get(img);
+                Files.deleteIfExists(path); // 이미지 파일 삭제
+            } catch (IOException e) {
+                System.err.println("Failed to delete image: " + e.getMessage());
+            }
+        }
+
+        contestJPARepository.delete(contest);
+    }
+
+    @Transactional
+    public void crawlingPage(int count){
+        for(int i = 0; i < count; i++) {
+            Document doc = null;
+
+            try {
+                doc = Jsoup.connect(homepage + "?c=find&s=1&gub=1&gp=" + i).get();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            assert doc != null;
+            Elements links = doc.select("div.tit > a");
+
+            for (Element link : links) {
+                contestCrawling(homepage + link.attr("href"));
+            }
         }
     }
 
@@ -65,14 +140,21 @@ public class CrawlingService {
         for(Element info : infos){
             String tag = info.select("span.tit").text();
             String text;
-            if(tag.equals("홈페이지")) text = info.select("a").attr("href");
+            if(tag.equals("홈페이지")){
+                text = info.select("a").attr("href");
+                // 이미 저장되어 있으면 종료
+                Contest contest = contestJPARepository.findByUrl(text);
+                if(contest != null){
+                    return;
+                }
+            }
             else text = info.ownText();
 
             // 맵에 태그와 내용 저장
             contestData.put(tag, text);
         }
 
-        Elements details = elements.select("div.comm-desc div");
+        Elements details = elements.select("div.comm-desc");
 
         StringBuilder content = new StringBuilder();
         for(Element detail : details){
@@ -104,6 +186,38 @@ public class CrawlingService {
             return;
         }
         contestJPARepository.save(contest);
+
+        // 이미지 저장
+        String previewImg;
+        try{
+            String previewImgSrc = elements.select("div.thumb img").attr("src");
+            if (previewImgSrc == null || previewImgSrc.isEmpty()) {
+                previewImg = null; // 이미지가 없을 경우 null 설정
+            } else {
+                InputStream previewIn = new URL(homepage + previewImgSrc).openStream();
+                previewImg = contest.getId() + "_preview.jpg";
+                Files.copy(previewIn, new File(imgPath + previewImg).toPath());
+                previewIn.close(); // InputStream 닫기
+            }
+        } catch (IOException e){
+            previewImg = null;
+        }
+        String img;
+        try{
+            String imgSrc = details.select("img").attr("src");
+            if (imgSrc == null || imgSrc.isEmpty()) {
+                img = null; // 이미지가 없을 경우 null 설정
+            } else {
+                InputStream in = new URL(homepage + imgSrc).openStream();
+                img = contest.getId() + ".jpg";
+                Files.copy(in, new File(imgPath + img).toPath());
+                in.close(); // InputStream 닫기
+            }
+        } catch (IOException e){
+            img = null;
+        }
+        contest.setImg(previewImg, img);
+        contestJPARepository.save(contest);
     }
 
     private Set<Field> parseFields(String fields){
@@ -131,14 +245,69 @@ public class CrawlingService {
         return Date.valueOf(date);
     }
 
+    @Transactional
     public ContestFindAllResponseDTO findAllContest(Pageable pageable){
         Page<Contest> contests = contestJPARepository.findAll(pageable);
 
         return new ContestFindAllResponseDTO(contests);
     }
 
+    @Transactional
     public Contest findContest(Long id){
         return contestJPARepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("해당 id를 가진 공모전이 없습니다"));
+    }
+
+    @Transactional
+    public void registerContest(ContestRegisterRequestDTO contestDTO, MultipartFile previewImg, MultipartFile img){
+        Contest contest = contestJPARepository.findByUrl(contestDTO.getUrl());
+        if(contest != null){
+            return;
+        }
+        try {
+            contest = Contest.builder()
+                    .contestName(contestDTO.getContestName())
+                    .fields(contestDTO.getFields())
+                    .applicant(contestDTO.getApplicant())
+                    .host(contestDTO.getHost())
+                    .sponsor(contestDTO.getSponsor())
+                    .receptionStart(contestDTO.getReceptionStart())
+                    .receptionEnd(contestDTO.getReceptionEnd())
+                    .prize(contestDTO.getPrize())
+                    .firstPrize(contestDTO.getFirstPrize())
+                    .url(contestDTO.getUrl())
+                    .content(contestDTO.getContent())
+                    .build();
+        } catch (OutOfDateException e){
+            return;
+        }
+        contestJPARepository.save(contest);
+
+        // 이미지 저장
+        String previewImgName = null;
+        if(!previewImg.isEmpty()){
+            try {
+                previewImgName = contest.getId() + "_preview.jpg";
+                File previewImgFile = new File(imgPath, previewImgName);
+
+                previewImg.transferTo(previewImgFile);
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+
+        String imgName = null;
+        if(!img.isEmpty()){
+            try {
+                imgName = contest.getId() + ".jpg";
+                File imgFile = new File(imgPath, imgName);
+
+                previewImg.transferTo(imgFile);
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+        contest.setImg(previewImgName, imgName);
+        contestJPARepository.save(contest);
     }
 }

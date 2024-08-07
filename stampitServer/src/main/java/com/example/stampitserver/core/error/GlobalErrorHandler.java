@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.net.MalformedURLException;
+
 @ControllerAdvice
 public class GlobalErrorHandler {
 
@@ -17,5 +19,12 @@ public class GlobalErrorHandler {
         ApiUtils.ApiResult<?> apiResult = ApiUtils.error("Not Found", e.getMessage(), e.status());
 
         return new ResponseEntity<>(apiResult, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MalformedURLException.class)
+    public ResponseEntity<?> MalformedURLException(MalformedURLException e){
+        ApiUtils.ApiResult<?> apiResult = ApiUtils.error("Bad Request", e.getMessage(), HttpStatus.BAD_REQUEST);
+
+        return new ResponseEntity<>(apiResult, HttpStatus.BAD_REQUEST);
     }
 }
