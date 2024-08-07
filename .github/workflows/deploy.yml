@@ -38,4 +38,4 @@ jobs:
         strip_components: 1
 
     - name: Execute deployment script
-      run: ssh -i ${{secrets.SSH_PRIVATE _KEY}} -p 8080 jb@stampit.ddns.net "cd ~/stampit && ./deploy.sh"
+      run: ssh -i ${{secrets.SSH_PRIVATE_KEY}} -p 8080 jb@stampit.ddns.net "cd ~/stampit && ./deploy.sh"
