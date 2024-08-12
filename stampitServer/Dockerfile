@@ -6,8 +6,8 @@ WORKDIR /app
 COPY . /app/
 
 # gradlew를 이용한 프로젝트 필드
-RUN chmod +x gradlew
-RUN ./gradlew clean build
+RUN chmod +x stampitServer/gradlew
+RUN ./stampitServer/gradlew clean build
 
 # 실행 스테이지
 FROM openjdk:17-oracle
