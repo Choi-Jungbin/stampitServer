@@ -38,10 +38,7 @@ public enum Prize {
         if(p == null || p.isEmpty()){
             return Prize.ETC;
         }
-        Prize prize = Prize.fromString(p);
-        if(prize != null){
-            return prize;
-        }
+
         if(p.contains("혜택")){
             return Prize.ETC;
         }

@@ -14,6 +14,7 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,7 +44,9 @@ public class CrawlingService {
     private String imgPath;
 
     @PostConstruct
-    private void crawling(){
+    @Transactional
+    @Async
+    protected void crawling(){
         // DB에 레코드가 있는지 확인
         if(contestJPARepository.count() != 0){
             return;
@@ -53,7 +56,9 @@ public class CrawlingService {
 
     // 매일 자정에 크롤링 업데이트
     @Scheduled(cron = "0 0 0 * * ?")
-    private void dailyCrawling(){
+    @Transactional
+    @Async
+    protected void dailyCrawling(){
         crawlingPage(3);
     }
 
@@ -97,8 +102,7 @@ public class CrawlingService {
         contestJPARepository.delete(contest);
     }
 
-    @Transactional
-    public void crawlingPage(int count){
+    private void crawlingPage(int count){
         for(int i = 0; i < count; i++) {
             Document doc = null;
 
