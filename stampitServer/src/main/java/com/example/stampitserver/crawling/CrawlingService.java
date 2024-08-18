@@ -195,6 +195,7 @@ public class CrawlingService {
         String previewImg;
         try{
             String previewImgSrc = elements.select("div.thumb img").attr("src");
+            System.out.println("previewImgSrc: " + previewImgSrc);
             if (previewImgSrc == null || previewImgSrc.isEmpty()) {
                 previewImg = null; // 이미지가 없을 경우 null 설정
             } else {
@@ -204,11 +205,13 @@ public class CrawlingService {
                 previewIn.close(); // InputStream 닫기
             }
         } catch (IOException e){
+            e.printStackTrace();
             previewImg = null;
         }
         String img;
         try{
             String imgSrc = details.select("img").attr("src");
+            System.out.println("imgSrc: " + imgSrc);
             if (imgSrc == null || imgSrc.isEmpty()) {
                 img = null; // 이미지가 없을 경우 null 설정
             } else {
@@ -218,6 +221,7 @@ public class CrawlingService {
                 in.close(); // InputStream 닫기
             }
         } catch (IOException e){
+            e.printStackTrace();
             img = null;
         }
         contest.setImg(previewImg, img);
