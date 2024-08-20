@@ -189,7 +189,7 @@ public class CrawlingService {
         }
         contest.setImg(img);
 
-        contestJPARepository.save(contest);
+        contestJPARepository.save(contest);;
     }
 
     private Set<Field> parseFields(String fields){

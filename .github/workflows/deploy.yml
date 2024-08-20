@@ -1,0 +1,40 @@
+name: Deploy to Oracle Cloud by Docker
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Docker build
+      run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin docker.io
+          docker build -f stampitServer/Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/stampit_server:latest . 
+          docker push ${{ secrets.DOCKER_USERNAME }}/stampit_server:latest
+
+    - name: Deploy to Oracle Cloud
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+          host: ${{ secrets.ORACLE_CLOUD_HOST }}
+          username: ${{ secrets.ORACLE_CLOUD_USERNAME }}
+          key: ${{ secrets.ORACLE_CLOUD_KEY }}
+          port: 22
+          script: |
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin docker.io
+            docker rm $(docker ps -a -q) || true # 실행 중인 컨테이너가 없을 수 있으므로 오류 무시
+            docker rmi ${{ secrets.DOCKER_USERNAME }}/stampit_server:latest || true # 이미지가 없을 경우 오류 무시
+            docker pull ${{ secrets.DOCKER_USERNAME }}/stampit_server:latest
+
+             # Nginx와 Spring Boot 애플리케이션을 Docker Compose로 실행
+            docker pull nginx:latest  # Nginx 이미지를 미리 가져옵니다.
+            docker-compose up -d
