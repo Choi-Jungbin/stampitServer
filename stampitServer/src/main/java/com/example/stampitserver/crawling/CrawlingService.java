@@ -79,18 +79,8 @@ public class CrawlingService {
     }
 
     private void deleteContest(Contest contest){
-        String previewImg = imgPath + contest.getPreviewImg();
-        if (!previewImg.isEmpty()) {
-            try {
-                Path path = Paths.get(previewImg);
-                Files.deleteIfExists(path); // 이미지 파일 삭제
-            } catch (IOException e) {
-                System.err.println("Failed to delete image: " + e.getMessage());
-            }
-        }
-
         String img = imgPath + contest.getImg();
-        if (!previewImg.isEmpty()) {
+        if (!img.isEmpty()) {
             try {
                 Path path = Paths.get(img);
                 Files.deleteIfExists(path); // 이미지 파일 삭제
@@ -158,13 +148,6 @@ public class CrawlingService {
             contestData.put(tag, text);
         }
 
-        Elements details = elements.select("div.comm-desc");
-
-        StringBuilder content = new StringBuilder();
-        for(Element detail : details){
-            content.append(detail.text()).append("\n");
-        }
-
         String[] date = contestData.get("접수기간").split(" ~ ");
 
         Contest contest;
@@ -178,9 +161,7 @@ public class CrawlingService {
                     .receptionStart(parseDate(date[0]))
                     .receptionEnd(parseDate(date[1]))
                     .prize(Prize.fromString(contestData.get("총 상금")))
-                    .firstPrize(contestData.get("1등 상금"))
                     .url(contestData.get("홈페이지"))
-                    .content(content.toString())
                     .build();
         } catch (NotFondEnumException e) {
             System.out.println(e.getMessage());
@@ -192,26 +173,9 @@ public class CrawlingService {
         contestJPARepository.save(contest);
 
         // 이미지 저장
-        String previewImg;
-        try{
-            String previewImgSrc = elements.select("div.thumb img").attr("src");
-            System.out.println("previewImgSrc: " + previewImgSrc);
-            if (previewImgSrc == null || previewImgSrc.isEmpty()) {
-                previewImg = null; // 이미지가 없을 경우 null 설정
-            } else {
-                InputStream previewIn = new URL(homepage + previewImgSrc).openStream();
-                previewImg = contest.getId() + "_preview.jpg";
-                Files.copy(previewIn, new File(imgPath + previewImg).toPath());
-                previewIn.close(); // InputStream 닫기
-            }
-        } catch (IOException e){
-            e.printStackTrace();
-            previewImg = null;
-        }
         String img;
         try{
-            String imgSrc = details.select("img").attr("src");
-            System.out.println("imgSrc: " + imgSrc);
+            String imgSrc = elements.select("div.thumb img").attr("src");
             if (imgSrc == null || imgSrc.isEmpty()) {
                 img = null; // 이미지가 없을 경우 null 설정
             } else {
@@ -221,11 +185,11 @@ public class CrawlingService {
                 in.close(); // InputStream 닫기
             }
         } catch (IOException e){
-            e.printStackTrace();
             img = null;
         }
-        contest.setImg(previewImg, img);
-        contestJPARepository.save(contest);
+        contest.setImg(img);
+
+        contestJPARepository.save(contest);;
     }
 
     private Set<Field> parseFields(String fields){
@@ -267,7 +231,7 @@ public class CrawlingService {
     }
 
     @Transactional
-    public void registerContest(ContestRegisterRequestDTO contestDTO, MultipartFile previewImg, MultipartFile img){
+    public void registerContest(ContestRegisterRequestDTO contestDTO, MultipartFile img){
         Contest contest = contestJPARepository.findByUrl(contestDTO.getUrl());
         if(contest != null){
             return;
@@ -282,9 +246,7 @@ public class CrawlingService {
                     .receptionStart(contestDTO.getReceptionStart())
                     .receptionEnd(contestDTO.getReceptionEnd())
                     .prize(contestDTO.getPrize())
-                    .firstPrize(contestDTO.getFirstPrize())
                     .url(contestDTO.getUrl())
-                    .content(contestDTO.getContent())
                     .build();
         } catch (OutOfDateException e){
             return;
@@ -292,30 +254,19 @@ public class CrawlingService {
         contestJPARepository.save(contest);
 
         // 이미지 저장
-        String previewImgName = null;
-        if(!previewImg.isEmpty()){
-            try {
-                previewImgName = contest.getId() + "_preview.jpg";
-                File previewImgFile = new File(imgPath, previewImgName);
-
-                previewImg.transferTo(previewImgFile);
-            } catch (IOException e){
-                e.printStackTrace();
-            }
-        }
-
         String imgName = null;
         if(!img.isEmpty()){
             try {
                 imgName = contest.getId() + ".jpg";
                 File imgFile = new File(imgPath, imgName);
 
-                previewImg.transferTo(imgFile);
+                img.transferTo(imgFile);
             } catch (IOException e){
                 e.printStackTrace();
             }
         }
-        contest.setImg(previewImgName, imgName);
+
+        contest.setImg(imgName);
         contestJPARepository.save(contest);
     }
 }

@@ -59,24 +59,15 @@ public class Contest {
     @Enumerated(EnumType.STRING)
     private Prize prize;
 
-    @Column
-    private String firstPrize;
-
     @Column(length = 1024, nullable = false)
     private String url;
-
-    @Column(columnDefinition = "TEXT")
-    private String content;
-
-    @Column
-    private String previewImg;
 
     @Column
     private String img;
 
     @Builder
     public Contest(String contestName, Set<Field> fields, Set<Applicant> applicant, String host, String sponsor,
-                   Date receptionStart, Date receptionEnd, Prize prize, String firstPrize, String url, String content){
+                   Date receptionStart, Date receptionEnd, Prize prize, String url){
         if(receptionEnd.toLocalDate().isBefore(LocalDate.now())){
             throw new OutOfDateException("날짜가 지났습니다.");
         }
@@ -89,13 +80,10 @@ public class Contest {
         this.receptionEnd = receptionEnd;
         this.remainDays = calcRemainDays(receptionEnd);
         this.prize = prize;
-        this.firstPrize = firstPrize;
         this.url = url;
-        this.content = content;
     }
 
-    public void setImg(String previewImg, String img){
-        this.previewImg = previewImg;
+    public void setImg(String img){
         this.img = img;
     }
 

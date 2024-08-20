@@ -31,8 +31,8 @@ public class CrawlingController {
     }
 
     @PostMapping("/contest")
-    public ResponseEntity<ApiUtils.ApiResult> registerContest(@ModelAttribute ContestRegisterRequestDTO contestDTO, @RequestParam("previewImg") MultipartFile previewImg, @RequestParam("img") MultipartFile img){
-        crawlingService.registerContest(contestDTO, previewImg, img);
+    public ResponseEntity<ApiUtils.ApiResult> registerContest(@ModelAttribute ContestRegisterRequestDTO contestDTO, @RequestParam("img") MultipartFile img){
+        crawlingService.registerContest(contestDTO, img);
 
         return ResponseEntity.ok(ApiUtils.success(null, "success"));
     }
