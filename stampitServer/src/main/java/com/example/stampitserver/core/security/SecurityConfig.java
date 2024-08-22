@@ -37,7 +37,14 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http.csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
-                .cors(cors -> cors.configurationSource(configurationSource()))
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration configuration = new CorsConfiguration();
+                    configuration.setAllowCredentials(true); // 자격 증명 허용
+                    configuration.addAllowedOrigin("*"); // 모든 출처 허용
+                    configuration.addAllowedHeader("*"); // 모든 헤더 허용
+                    configuration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
+                    return configuration;
+                }))
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
                 .formLogin(Customizer.withDefaults());
 
