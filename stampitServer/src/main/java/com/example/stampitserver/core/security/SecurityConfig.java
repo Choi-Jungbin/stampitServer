@@ -7,7 +7,6 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +14,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @EnableWebSecurity
 @Configuration
@@ -37,23 +40,19 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http.csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
-                .cors(cors -> cors.configurationSource(request -> {
-                    CorsConfiguration configuration = new CorsConfiguration();
-                    configuration.setAllowCredentials(true); // 자격 증명 허용
-                    configuration.addAllowedOrigin("*"); // 모든 출처 허용
-                    configuration.addAllowedHeader("*"); // 모든 헤더 허용
-                    configuration.addAllowedMethod("*"); // 모든 HTTP 메서드 허용
-                    return configuration;
-                }))
+                .cors(withDefaults())
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
-                .formLogin(Customizer.withDefaults());
+                .formLogin(withDefaults());
 
         return http.build();
     }
 
-    private CorsConfigurationSource configurationSource() {
+    @Bean
+    CorsConfigurationSource configurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedMethod("*");
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://stampit.readyspace.site"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH"));
+        configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
