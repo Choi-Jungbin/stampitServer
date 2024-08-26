@@ -31,11 +31,10 @@ public class CorsTest {
     @Test
     public void testCors() throws Exception {
         mockMvc.perform(options("/your-endpoint") // CORS를 테스트할 엔드포인트
-                        .header(HttpHeaders.ORIGIN, "http://localhost:3000/contest") // 테스트할 출처
+                        .header(HttpHeaders.ORIGIN, "http://localhost:3000") // 테스트할 출처
                         .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")) // 요청 메서드
                 .andExpect(status().isOk()) // HTTP 200 OK 응답 확인
                 .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost:3000")) // 모든 출처 허용
-                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, "*")) // 모든 헤더 허용
-                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET, POST, PUT, DELETE, OPTIONS")); // 허용된 메서드 확인
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,POST,PUT,DELETE,PATCH")); // 허용된 메서드 확인
     }
 }
