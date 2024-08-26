@@ -39,8 +39,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http.csrf(AbstractHttpConfigurer::disable)
-                .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
-                .cors(withDefaults())
+                .cors(cors -> cors.configurationSource(configurationSource()))
                 .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll())
                 .formLogin(withDefaults());
 
@@ -52,7 +51,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://localhost:3000", "https://stampit.readyspace.site"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH"));
-        configuration.addAllowedHeader("*");
+        configuration.addAllowedHeader(CorsConfiguration.ALL);
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
