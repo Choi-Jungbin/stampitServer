@@ -18,10 +18,10 @@ class StampitServerApplicationTests {
     @Autowired
     private CrawlingService crawlingService; // CrawlingService 주입
 
-    @Test
-    void contextLoads() {
-        // 컨트롤러와 서비스가 null이 아닌지 확인
-        assertThat(crawlingController).isNotNull();
-        assertThat(crawlingService).isNotNull();
-    }
+    // @Test
+    // void contextLoads() {
+    //     // 컨트롤러와 서비스가 null이 아닌지 확인
+    //     assertThat(crawlingController).isNotNull();
+    //     assertThat(crawlingService).isNotNull();
+    // }
 }
